@@ -48,15 +48,17 @@ func customerMode(scanner *bufio.Scanner) {
 	for {
 		fmt.Println("\n===== Mode Customer - Aplikasi Keranjang Belanja =====")
 		fmt.Println("1. Lihat menu")
-		fmt.Println("2. Tambah barang ke keranjang")
-		fmt.Println("3. Hapus barang dari keranjang")
-		fmt.Println("4. Perbarui jumlah barang")
-		fmt.Println("5. Lihat keranjang")
-		fmt.Println("6. Kosongkan keranjang")
-		fmt.Println("7. Urutkan barang di keranjang")
-		fmt.Println("8. Cari barang")
-		fmt.Println("9. Checkout")
-		fmt.Println("10. Kembali ke menu utama")
+		fmt.Println("2. Urutkan menu")
+		fmt.Println("3. Cari menu")
+		fmt.Println("4. Tambah barang ke keranjang")
+		fmt.Println("5. Hapus barang dari keranjang")
+		fmt.Println("6. Perbarui jumlah barang")
+		fmt.Println("7. Lihat keranjang")
+		fmt.Println("8. Kosongkan keranjang")
+		fmt.Println("9. Urutkan barang di keranjang")
+		fmt.Println("10. Cari barang di keranjang")
+		fmt.Println("11. Checkout")
+		fmt.Println("12. Kembali ke menu utama")
 		fmt.Print("Pilih opsi: ")
 
 		scanner.Scan()
@@ -66,23 +68,27 @@ func customerMode(scanner *bufio.Scanner) {
 		case "1":
 			menu.DisplayMenu()
 		case "2":
-			addItemFromMenu(scanner, &myCart)
+			sortMenuItems(scanner)
 		case "3":
-			removeItem(scanner, &myCart)
+			searchMenuItems(scanner)
 		case "4":
-			updateItem(scanner, &myCart)
+			addItemFromMenu(scanner, &myCart)
 		case "5":
-			viewCart(&myCart)
+			removeItem(scanner, &myCart)
 		case "6":
+			updateItem(scanner, &myCart)
+		case "7":
+			viewCart(&myCart)
+		case "8":
 			myCart.ClearCart()
 			fmt.Println("Keranjang berhasil dikosongkan!")
-		case "7":
-			sortCartItems(scanner, &myCart)
-		case "8":
-			searchItem(scanner, &myCart)
 		case "9":
-			checkout(scanner, &myCart)
+			sortCartItems(scanner, &myCart)
 		case "10":
+			searchItem(scanner, &myCart)
+		case "11":
+			checkout(scanner, &myCart)
+		case "12":
 			return
 		default:
 			fmt.Println("Opsi tidak valid. Silakan coba lagi.")
@@ -92,6 +98,312 @@ func customerMode(scanner *bufio.Scanner) {
 
 func adminMode(scanner *bufio.Scanner) {
 	admin.AdminMenu(scanner)
+}
+
+func sortMenuItems(scanner *bufio.Scanner) {
+	menuItems := menu.GetAllMenuItems()
+	if len(menuItems) <= 1 {
+		fmt.Println("Menu memiliki 1 atau kurang item. Tidak perlu diurutkan.")
+		return
+	}
+
+	fmt.Println("\n===== Opsi Pengurutan Menu =====")
+	fmt.Println("1. Urutkan berdasarkan harga (rendah ke tinggi)")
+	fmt.Println("2. Urutkan berdasarkan harga (tinggi ke rendah)")
+	fmt.Println("3. Urutkan berdasarkan nama (A-Z)")
+	fmt.Println("4. Urutkan berdasarkan stok (rendah ke tinggi)")
+	fmt.Print("Pilih opsi pengurutan: ")
+
+	scanner.Scan()
+	sortOption := scanner.Text()
+
+	fmt.Println("\n===== Algoritma Pengurutan =====")
+	fmt.Println("1. Selection Sort")
+	fmt.Println("2. Insertion Sort")
+	fmt.Print("Pilih algoritma pengurutan: ")
+
+	scanner.Scan()
+	algorithmOption := scanner.Text()
+
+	var sortedItems []menu.MenuItem
+
+	switch sortOption {
+	case "1": // Harga rendah ke tinggi
+		prices := make([]int, len(menuItems))
+		for i, item := range menuItems {
+			prices[i] = item.Harga
+		}
+
+		if algorithmOption == "1" {
+			prices = algorithmn.SelectionSort(prices)
+		} else {
+			prices = algorithmn.InsertionSort(prices)
+		}
+
+		// Buat slice terurut berdasarkan harga
+		for _, price := range prices {
+			for _, item := range menuItems {
+				if item.Harga == price {
+					// Cek apakah sudah ada di sortedItems
+					found := false
+					for _, sortedItem := range sortedItems {
+						if sortedItem.ID == item.ID {
+							found = true
+							break
+						}
+					}
+					if !found {
+						sortedItems = append(sortedItems, item)
+						break
+					}
+				}
+			}
+		}
+
+	case "2": // Harga tinggi ke rendah
+		prices := make([]int, len(menuItems))
+		for i, item := range menuItems {
+			prices[i] = item.Harga
+		}
+
+		if algorithmOption == "1" {
+			prices = algorithmn.SelectionSort(prices)
+		} else {
+			prices = algorithmn.InsertionSort(prices)
+		}
+
+		// Reverse untuk tinggi ke rendah
+		for i, j := 0, len(prices)-1; i < j; i, j = i+1, j-1 {
+			prices[i], prices[j] = prices[j], prices[i]
+		}
+
+		// Buat slice terurut berdasarkan harga
+		for _, price := range prices {
+			for _, item := range menuItems {
+				if item.Harga == price {
+					// Cek apakah sudah ada di sortedItems
+					found := false
+					for _, sortedItem := range sortedItems {
+						if sortedItem.ID == item.ID {
+							found = true
+							break
+						}
+					}
+					if !found {
+						sortedItems = append(sortedItems, item)
+						break
+					}
+				}
+			}
+		}
+
+	case "3": // Nama A-Z
+		sortedItems = make([]menu.MenuItem, len(menuItems))
+		copy(sortedItems, menuItems)
+
+		// Simple bubble sort untuk nama
+		for i := 0; i < len(sortedItems)-1; i++ {
+			for j := 0; j < len(sortedItems)-i-1; j++ {
+				if sortedItems[j].Nama > sortedItems[j+1].Nama {
+					sortedItems[j], sortedItems[j+1] = sortedItems[j+1], sortedItems[j]
+				}
+			}
+		}
+
+	case "4": // Stok rendah ke tinggi
+		stoks := make([]int, len(menuItems))
+		for i, item := range menuItems {
+			stoks[i] = item.Stok
+		}
+
+		if algorithmOption == "1" {
+			stoks = algorithmn.SelectionSort(stoks)
+		} else {
+			stoks = algorithmn.InsertionSort(stoks)
+		}
+
+		// Buat slice terurut berdasarkan stok
+		for _, stok := range stoks {
+			for _, item := range menuItems {
+				if item.Stok == stok {
+					// Cek apakah sudah ada di sortedItems
+					found := false
+					for _, sortedItem := range sortedItems {
+						if sortedItem.ID == item.ID {
+							found = true
+							break
+						}
+					}
+					if !found {
+						sortedItems = append(sortedItems, item)
+						break
+					}
+				}
+			}
+		}
+
+	default:
+		fmt.Println("Opsi pengurutan tidak valid.")
+		return
+	}
+
+	fmt.Println("\n===== MENU TERURUT =====")
+	for _, item := range sortedItems {
+		status := "Tersedia"
+		if item.Stok == 0 {
+			status = "Habis"
+		}
+		fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n",
+			item.ID, item.Nama, item.Harga, item.Stok, status)
+	}
+}
+
+func searchMenuItems(scanner *bufio.Scanner) {
+	menuItems := menu.GetAllMenuItems()
+	if len(menuItems) == 0 {
+		fmt.Println("Belum ada menu tersedia.")
+		return
+	}
+
+	fmt.Println("\n===== Opsi Pencarian Menu =====")
+	fmt.Println("1. Cari berdasarkan nama")
+	fmt.Println("2. Cari berdasarkan harga")
+	fmt.Println("3. Cari berdasarkan rentang harga")
+	fmt.Print("Pilih opsi pencarian: ")
+
+	scanner.Scan()
+	searchOption := scanner.Text()
+
+	switch searchOption {
+	case "1": // Cari berdasarkan nama
+		fmt.Print("Masukkan nama menu yang dicari: ")
+		scanner.Scan()
+		nama := scanner.Text()
+
+		hasil := menu.SearchMenuByName(nama)
+		if len(hasil) == 0 {
+			fmt.Println("Menu tidak ditemukan.")
+		} else {
+			fmt.Println("\n===== HASIL PENCARIAN =====")
+			for _, item := range hasil {
+				status := "Tersedia"
+				if item.Stok == 0 {
+					status = "Habis"
+				}
+				fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n",
+					item.ID, item.Nama, item.Harga, item.Stok, status)
+			}
+		}
+
+	case "2": // Cari berdasarkan harga
+		fmt.Print("Masukkan harga yang dicari: ")
+		scanner.Scan()
+		hargaStr := scanner.Text()
+		harga, err := strconv.Atoi(hargaStr)
+		if err != nil {
+			fmt.Println("Format harga tidak valid.")
+			return
+		}
+
+		fmt.Println("\n===== Algoritma Pencarian =====")
+		fmt.Println("1. Linear Search")
+		fmt.Println("2. Binary Search (membutuhkan data terurut)")
+		fmt.Print("Pilih algoritma pencarian: ")
+
+		scanner.Scan()
+		algorithmOption := scanner.Text()
+
+		if algorithmOption == "1" {
+			// Linear search
+			found := false
+			fmt.Println("\n===== HASIL PENCARIAN =====")
+			for _, item := range menuItems {
+				if item.Harga == harga {
+					status := "Tersedia"
+					if item.Stok == 0 {
+						status = "Habis"
+					}
+					fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n",
+						item.ID, item.Nama, item.Harga, item.Stok, status)
+					found = true
+				}
+			}
+			if !found {
+				fmt.Println("Menu dengan harga tersebut tidak ditemukan.")
+			}
+		} else if algorithmOption == "2" {
+			// Binary search
+			prices := make([]int, len(menuItems))
+			for i, item := range menuItems {
+				prices[i] = item.Harga
+			}
+
+			// Sort prices untuk binary search
+			sort.Ints(prices)
+
+			index := algorithmn.BinarySearch(prices, harga)
+			if index != -1 {
+				fmt.Println("\n===== HASIL PENCARIAN =====")
+				fmt.Println("Menu dengan harga tersebut ditemukan:")
+				for _, item := range menuItems {
+					if item.Harga == harga {
+						status := "Tersedia"
+						if item.Stok == 0 {
+							status = "Habis"
+						}
+						fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n",
+							item.ID, item.Nama, item.Harga, item.Stok, status)
+					}
+				}
+			} else {
+				fmt.Println("Menu dengan harga tersebut tidak ditemukan.")
+			}
+		}
+
+	case "3": // Cari berdasarkan rentang harga
+		fmt.Print("Masukkan harga minimum: ")
+		scanner.Scan()
+		minStr := scanner.Text()
+		minHarga, err := strconv.Atoi(minStr)
+		if err != nil {
+			fmt.Println("Format harga minimum tidak valid.")
+			return
+		}
+
+		fmt.Print("Masukkan harga maksimum: ")
+		scanner.Scan()
+		maxStr := scanner.Text()
+		maxHarga, err := strconv.Atoi(maxStr)
+		if err != nil {
+			fmt.Println("Format harga maksimum tidak valid.")
+			return
+		}
+
+		if minHarga > maxHarga {
+			fmt.Println("Harga minimum tidak boleh lebih besar dari harga maksimum.")
+			return
+		}
+
+		found := false
+		fmt.Println("\n===== HASIL PENCARIAN =====")
+		for _, item := range menuItems {
+			if item.Harga >= minHarga && item.Harga <= maxHarga {
+				status := "Tersedia"
+				if item.Stok == 0 {
+					status = "Habis"
+				}
+				fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n",
+					item.ID, item.Nama, item.Harga, item.Stok, status)
+				found = true
+			}
+		}
+		if !found {
+			fmt.Printf("Menu dengan rentang harga Rp%d - Rp%d tidak ditemukan.\n", minHarga, maxHarga)
+		}
+
+	default:
+		fmt.Println("Opsi pencarian tidak valid.")
+	}
 }
 
 func addItemFromMenu(scanner *bufio.Scanner, c *cart.Cart) {
@@ -140,32 +452,6 @@ func addItemFromMenu(scanner *bufio.Scanner, c *cart.Cart) {
 	menu.UpdateStok(id, menuItem.Stok-quantity)
 
 	fmt.Printf("%s x%d berhasil ditambahkan ke keranjang!\n", menuItem.Nama, quantity)
-}
-
-func addItem(scanner *bufio.Scanner, c *cart.Cart) {
-	var name string
-	var quantity, price int
-
-	fmt.Print("Masukkan nama barang: ")
-	scanner.Scan()
-	name = scanner.Text()
-
-	fmt.Print("Masukkan jumlah: ")
-	scanner.Scan()
-	quantity, _ = strconv.Atoi(scanner.Text())
-
-	fmt.Print("Masukkan harga per barang: ")
-	scanner.Scan()
-	price, _ = strconv.Atoi(scanner.Text())
-
-	item := cart.Item{
-		Name:     name,
-		Quantity: quantity,
-		Price:    price,
-	}
-
-	c.AddItem(item)
-	fmt.Println("Barang berhasil ditambahkan ke keranjang!")
 }
 
 func removeItem(scanner *bufio.Scanner, c *cart.Cart) {

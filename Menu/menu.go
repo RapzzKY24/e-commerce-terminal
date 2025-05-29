@@ -34,7 +34,13 @@ func init() {
 	MenuList[2] = MenuItem{ID: 2, Nama: "Mie Ayam", Harga: 12000, Stok: 15}
 	MenuList[3] = MenuItem{ID: 3, Nama: "Es Teh", Harga: 5000, Stok: 30}
 	MenuList[4] = MenuItem{ID: 4, Nama: "Ayam Bakar", Harga: 25000, Stok: 10}
-	NextMenuID = 5
+	MenuList[5] = MenuItem{ID: 5, Nama: "Sate Ayam", Harga: 20000, Stok: 12}
+	MenuList[6] = MenuItem{ID: 6, Nama: "Bakso", Harga: 13000, Stok: 18}
+	MenuList[7] = MenuItem{ID: 7, Nama: "Soto Ayam", Harga: 14000, Stok: 14}
+	MenuList[8] = MenuItem{ID: 8, Nama: "Jus Alpukat", Harga: 10000, Stok: 16}
+	MenuList[9] = MenuItem{ID: 9, Nama: "Teh Manis Hangat", Harga: 4000, Stok: 25}
+	MenuList[10] = MenuItem{ID: 10, Nama: "Kopi Hitam", Harga: 7000, Stok: 20}
+	NextMenuID = 11
 }
 
 // TambahMenu menambahkan menu baru
@@ -61,7 +67,7 @@ func DisplayMenu() {
 		if item.Stok == 0 {
 			status = "Habis"
 		}
-		fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n", 
+		fmt.Printf("ID: %d | %s | Rp%d | Stok: %d (%s)\n",
 			item.ID, item.Nama, item.Harga, item.Stok, status)
 	}
 }
@@ -109,7 +115,7 @@ func PesanMenu(id int, jumlah int) bool {
 			// Kurangi stok
 			menu.Stok -= jumlah
 			MenuList[id] = menu
-			
+
 			// Tambahkan ke log transaksi
 			TransaksiLog = append(TransaksiLog, Transaksi{
 				IDMenu: id,
@@ -156,19 +162,19 @@ func ValidateMenuInput(hargaStr, stokStr string) (int, int, error) {
 	if err != nil {
 		return 0, 0, fmt.Errorf("format harga tidak valid")
 	}
-	
+
 	stok, err := strconv.Atoi(stokStr)
 	if err != nil {
 		return 0, 0, fmt.Errorf("format stok tidak valid")
 	}
-	
+
 	if harga <= 0 {
 		return 0, 0, fmt.Errorf("harga harus lebih dari 0")
 	}
-	
+
 	if stok < 0 {
 		return 0, 0, fmt.Errorf("stok tidak boleh negatif")
 	}
-	
+
 	return harga, stok, nil
 }
